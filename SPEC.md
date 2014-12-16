@@ -114,6 +114,9 @@ __params__
 
 - plugin { Object } - A `Plugin` object that has a number of differnt attributes on the plugin to allow the `FileUploader` to read and interact with the plugin. If some required methods are not provided the plugin will not be added and an `error` event will be emitted from the FileUploader.
 
+- options { Object } - _Optional_ A optional object that can specify the behavior in which the `FileUploader` behaves with plugin. 
+  - options.menuItem { Boolean } - _Optional_ A flag to specify if the plugin should be linked to in a list of plugins.
+
 __returns__
 
 - plugin { Object } - A copy of the `Plugin` object back with the `isAdded` property set to true if successfull added to the `FileUploader`
@@ -150,7 +153,6 @@ uploadFn is passed an UploadEvent object that has a number of hooks that you can
 ```javascript
 var fileUploader = require( 'file-uploader' );
 
-```javascript
 fileUploader.useToUpload( function( <UploadEvent> ) {
     var files = event.files; // this is commiting from a input file event
     // blah blah upload
@@ -158,3 +160,8 @@ fileUploader.useToUpload( function( <UploadEvent> ) {
         files[{ url: 'http://foo.bar/baz.png' }]
     })
 } );
+```
+
+# Plugin Spec v0
+
+Plugin is a small specification for what a plugin should consist of to qualify as a viable plugin for `FileUploader`. Plugins are _Objects_ that can easily intergrate info the `FileUploader` but also work as a standalond module.
