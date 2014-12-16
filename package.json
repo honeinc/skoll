@@ -1,0 +1,42 @@
+{
+  "name": "file-uploader",
+  "version": "0.0.0",
+  "description": "a simple browserifiable upload modal",
+  "main": "index.js",
+  "scripts": {
+    "test": "jshint ./index.js ./src/* && browserify test/*.js | tape-run -b firefox",
+    "build": "gulp"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/honeinc/file-uploader"
+  },
+  "keywords": [
+    "upload",
+    "file picker",
+    "browserify",
+    "ajax",
+    "pluggable"
+  ],
+  "author": "Jacob Lowe",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/honeinc/file-uploader/issues"
+  },
+  "homepage": "https://github.com/honeinc/file-uploader",
+  "devDependencies": {
+    "browserify": "^6.3.2",
+    "faucet": "0.0.1",
+    "gulp": "^3.8.10",
+    "gulp-browserify": "^0.5.0",
+    "gulp-debug": "^1.0.1",
+    "gulp-rename": "^1.2.0",
+    "gulp-uglify": "^1.0.1",
+    "jshint": "^2.5.10",
+    "tape": "^3.0.3",
+    "tape-run": "^0.3.0"
+  },
+  "dependencies": {
+    "xhr": "^1.17.0"
+  }
+}
