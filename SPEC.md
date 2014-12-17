@@ -211,4 +211,20 @@ plugin.open = function( meta, fileUploader, done ) {
 
 ### Plugin::teardown
 
-This is a method that is called when there is an intent by the user to close the plugin or the entire `FileUploader`. 
+This is a method that is called when there is an intent by the user to close the plugin or the entire `FileUploader`. The intent of this method is to give the plugin a good time to remove any event bindings and cleanup any data cache that is session based. 
+
+# UploadEvent Spec v1
+
+Upload Event is an Object that is passed to the uploader function that can be a custom function so a spec is needed to clearify what this object contains to be able to optimizate uploader funtions.
+
+## Key Properties
+
+### Upload::url
+
+This is a url that points towards a url where the asset exsist. This will usually be an external asset which is not an image and something that should be embedded.
+
+### Upload::files
+
+This is an Array of Object that contain some meta data about the file similiar to the File Objects given back with an file input change event. Except that there is one distinct field that is blob if blob data is supported by the browser.
+
+* Notes * So this spec was going to be longer to include hooks to tie into the `FileUploader` to diplay so effing awesome animations for loading the images but it was decided that this module should not be required to do that.
