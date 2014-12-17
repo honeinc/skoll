@@ -90,10 +90,6 @@ fileUploader.open( {
 
 This will remove the `show` from the uploader modal container. This will also trigger `Plugin::teardown` to the currect active plugin.
 
-__params__
-
-- preserveState { Boolean } - this will preserve the state of the current view so when opened again the state of the last time the uploader was opened is still preserved. This also avoids the `Plugin::teardown` trigger as well as the `Plugin::open` trigger when the `FileUploader` is opened back up.
-
 ```javascript
 var fileUploader = require( 'file-uploader' );
 
@@ -165,3 +161,54 @@ fileUploader.useToUpload( function( <UploadEvent> ) {
 # Plugin Spec v0
 
 Plugin is a small specification for what a plugin should consist of to qualify as a viable plugin for `FileUploader`. Plugins are _Objects_ that can easily intergrate info the `FileUploader` but also work as a standalond module.
+
+## Plugin Lifecycle
+
+The plugin has a simple lifecycle. There is three primary states. The initial state is a _rest_ state that means the plugin is not viewable or interact able. Then once there is a intent from the user of application consuming the `FileUploader` to open this plugin then the plugins state is a _init_ or _render_ state that should get the view ready to be viewed. Onces the view is render and _calls back_ to the `FileUploader` the Plugin is then in an _active_ state. This is the part of the cycle that a user can iteract with the plugin and the plugins ui. Once the users intent is to close the Plugin or the entire `FileUploader` then the Plugin is in a temporary state of _teardown_ that once done is put back into a _rest_ state.
+
+```
+ ┌─  REST  ─┐
+ │          │ 
+INIT     TEARDOWN
+ │          │
+ └─ ACTIVE ─┘
+```
+
+### Triggers
+
+- Init State -> Plugin::open
+- Teardown -> Plugin::teardown 
+
+## Required properties
+
+### Plugin::attributes
+
+This should be an `Object` that has some pieces of information about the plugin inside of it. The least of which is name to identify the plugin when registering the plugin with the `FileUploader`. Also another good not required property is version.
+
+## Required Methods
+
+### Plugin::open
+
+This is a method that is called when the plugin is opened up into the view of the modal and the user can interact with the plugin. There is a some data that is passed to the open method.
+
+First is some meta data that is the meta data about the page state that it is currently being viewed on there is no guarenttee what info is inside of this Object and is a way to get information to you plugin from the init `FileUploader::open` call.
+
+Second is the actual `FileUploader` to be able to communicate back to the `FileUploader` or store some type of data on the `FileUploader` object for future use inside of other plugins. 
+
+Third is a done method that expects an error and either a DOM Node or a String of HTML to indicate that the plugin has loaded. If nothing is given in the second param or and Error is given in the first param. The default plugin is rendered and an Error is emitted from the `FileUploader` Object.
+
+Here is an example of a simple Plugin::open method
+
+```javascript
+
+plugin.open = function( meta, fileUploader, done ) {
+    var name = meta.name,
+        el = document.createElement( 'H1' );
+    el.innerText = 'Hi ' + name + '!';
+    done( null, el );
+}; // this should render an H1 with a greeting inthe the modal content area.
+```
+
+### Plugin::teardown
+
+This is a method that is called when there is an intent by the user to close the plugin or the entire `FileUploader`. 
