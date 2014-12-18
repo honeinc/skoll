@@ -316,3 +316,7 @@ FileUploader.prototype._handlePluginOpen = function( options, err, el ) {
 
     openDefault(); // just try to open default when no content is given
 };
+
+module.exports = new FileUploader();
+module.exports.FileUploader = FileUploader;
+module.exports.UploadEvent = UploadEvent;
