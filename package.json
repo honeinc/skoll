@@ -37,6 +37,6 @@
     "tape-run": "^0.3.0"
   },
   "dependencies": {
-    "xhr": "^1.17.0"
+    "merge": "^1.2.0"
   }
 }
