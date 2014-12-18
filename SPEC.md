@@ -213,7 +213,7 @@ plugin.open = function( meta, fileUploader, done ) {
 
 This is a method that is called when there is an intent by the user to close the plugin or the entire `FileUploader`. The intent of this method is to give the plugin a good time to remove any event bindings and cleanup any data cache that is session based. 
 
-# UploadEvent Spec v1
+# UploadEvent Spec v0
 
 Upload Event is an Object that is passed to the uploader function that can be a custom function so a spec is needed to clearify what this object contains to be able to optimizate uploader funtions.
 
