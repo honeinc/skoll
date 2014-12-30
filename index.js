@@ -2,20 +2,26 @@
 'use strict';
 
 var merge = require( 'merge' ),
-    UploadEvent = require( './src/upload-event')
+    eventEmitter = require( 'event-emitter' ),
+    UploadEvent = require( './src/upload-event'),
+    utils = require( './src/utils' ),
+    uploadPlugin = require( './src/plugins/upload' ),
+    previewPlugin = require( './src/plugins/preview' );
 
 /*
-### FileUploader - Constructor
+### Skoll - Constructor
 
 This is a basic Constructor that will just initialize some basic data structures needed to change the state of the fileUpload this should not due much due to the fact that this will happen initially inside of the module for the singleton. This should also be accessable via an export.
 
 ```javascript
-var FileUploader = require( 'file-uploader' ).FileUploader,
-    fileUploader = new FileUploader();
+var Skoll = require( 'file-uploader' ).Skoll,
+    Skoll = new Skoll();
 ```
 */
 
-function FileUploader() {
+function Skoll() {
+
+    eventEmitter( this );
 
     this.el = document.createElement( 'div' );
     this.state = {
@@ -23,31 +29,35 @@ function FileUploader() {
     };
     this.plugins = { };
     this.defaults = {
-        plugin : 'upload'
+        plugin : 'upload',
+        closeOnUpload: true
     };
+
     setTimeout( this._init.bind( this ), 0 );
 }
 
-FileUploader.prototype = {
+Skoll.prototype = {
     get pluginList ( ) {
         var plugins = Object.keys( this.plugins );
-        return plugins.filter( FileUploader.pluginVisible )
-            .map( FileUploader.pluginListEl );
+        return plugins.map( Skoll.mapPlugins( this.plugins ) )
+            .filter( Skoll.pluginVisible )
+            .map( Skoll.pluginListEl( this.currentPlugin ) )
+            .reverse();
     }
-}
+};
 
 /*
-### FileUploader::open
+### Skoll::open
 
-This will just apply a class, `show`, to the uploader modal container to show the modal. Since only example CSS is provided either the example css needs to be intergrated into the code or you will need to provide that functionality. This will also set the view state of the `fileUploader` object to `1` to indicate that the modal is open.
+This will just apply a class, `show`, to the uploader modal container to show the modal. Since only example CSS is provided either the example css needs to be intergrated into the code or you will need to provide that functionality. This will also set the view state of the `Skoll` object to `1` to indicate that the modal is open.
 
 ```javascript
-var fileUploader = require( 'file-uploader' );
+var Skoll = require( 'file-uploader' );
 
-fileUploader.open();
+Skoll.open();
 
-if ( fileUploader.state.view === 1 ) {
-    console.log( 'fileUploader is open' );
+if ( Skoll.state.view === 1 ) {
+    console.log( 'Skoll is open' );
 }
 
 ```
@@ -63,9 +73,9 @@ __returns__
 - Plugin { Object } - plugin that is opened
 
 ```javascript
-var fileUploader = require( 'file-uploader' );
+var Skoll = require( 'file-uploader' );
 
-fileUploader.open( {
+Skoll.open( {
     meta: {
         description: 'Awesome cats and pizza\'s in space'
     },
@@ -75,52 +85,70 @@ fileUploader.open( {
 ```
 */
 
-FileUploader.prototype.open = function( options ) {
+Skoll.prototype.open = function( options ) {
 
     options = options || {};
 
     var defaultPlugin = this.defaults.plugin,
         pluginName =  options.plugin || defaultPlugin,
-        plugin = this.plugins[ pluginName ] || this.plugins[ defaultPlugin ];
+        plugin = this.plugins[ pluginName ] || this.plugins[ defaultPlugin ],
+        close = this.close.bind( this );
+
+
+    if ( this.currentPlugin ) {
+        this.currentPlugin.teardown();
+    }
 
     options.plugin = pluginName;
     this.currentPlugin = plugin;
+    this.meta = options.meta || {};
 
     // update links
-    this.pluginList.forEach( this.listEl.appendChild.bind( this.listEl ) );
+    this.listEl.innerHTML = '';
+
+    this.pluginList.map( this.mapBindOpen.bind( this ) )
+        .forEach( this.listEl.appendChild.bind( this.listEl ) );
 
     this.el.classList.add( 'show' );
     this.state.view = 1;
     // open plugin
     if ( !plugin ) {
-        // this.emit( 'error', new Error( 'No Plugin is found with the name ' + pluginName ))
+        this.emit( 'error', new Error( 'No Plugin is found with the name ' + pluginName ) );
         return;
     }
     plugin.open( options.meta || {}, this, this._handlePluginOpen.bind( this, options ) );
+    // need to unbind this
+    // document.addEventListener( 'keyup', function( e ) {
+    //    var code = e.keyCode || e.which;
+    //     close();
+    // } );
+
+    this.emit( 'open', plugin ); 
+
 };
 
 
 /*
-### FileUploader::close
+### Skoll::close
 
 This will remove the `show` from the uploader modal container. This will also trigger `Plugin::teardown` to the currect active plugin.
 
 ```javascript
-var fileUploader = require( 'file-uploader' );
+var Skoll = require( 'file-uploader' );
 
-fileUploader.open();
+Skoll.open();
 fileUplader.close();
 
-if ( !fileUploader.state.view ) {
-    console.log( 'fileUploader is closed' );
+if ( !Skoll.state.view ) {
+    console.log( 'Skoll is closed' );
 }
 
 ```
 */
 
-FileUploader.prototype.close = function() {
+Skoll.prototype.close = function() {
 
-    this.el.classList.add( 'show' );
+    this.el.classList.remove( 'show' );
     this.state.view = 0;
 
     this.contentEl.innerHTML = '';
@@ -129,26 +157,112 @@ FileUploader.prototype.close = function() {
         this.currentPlugin = null;
     }
 
+    this.emit( 'close' );
+
 };
 
 /*
-### FileUploader::addPlugin
+### Skoll::upload
 
-This will add a plugin to the list of available plugins. Meaning that it will also add the plugin name to the list of _tabable_ plugins, and targets to open when opening the `FileUploader`.
+Upload method is a proxy to the Upload adapter that should be provided. This is used mainly to normalize some of the event data allowing it to be in a common format that uploader adapters can easily deal with. This is mainly to be used inside of plugins
 
 __params__
 
-- plugin { Object } - A `Plugin` object that has a number of differnt attributes on the plugin to allow the `FileUploader` to read and interact with the plugin. If some required methods are not provided the plugin will not be added and an `error` event will be emitted from the FileUploader.
+- target { Object } - This is a object that will have the key Files in it. It is something similiar to the `event.target` object you would get on a change event of a file type input.
+    - target.files { Array } - This can be a `Blob` or an object with the key `url` inside of it. eg. `[{ url: https://pbs.twimg.com/profile_images/544039728463351808/NkoRdBBL_bigger.png }]`. When creating an event this will attempt to convert this url into a blob if it is an image, otherwise it will just pass the object to the upload adapter.
+*/
 
-- options { Object } - _Optional_ A optional object that can specify the behavior in which the `FileUploader` behaves with plugin. 
+
+Skoll.prototype.upload = function( target ) { 
+
+    if ( typeof target.files !== 'object' ) { // default upload events are not a true array
+        this.emit( 'error', new Error( 'target passed to Skoll::upload does not have files array' ) );
+        return;
+    }
+
+    if ( typeof this.uploadFn !== 'function' ) {
+        // error
+        this.emit( 'error', new Error( 'No upload function added using Skoll::useToUpload' ) );
+        return;
+    }
+
+    var close = this.close.bind( this ),
+        uploadFn = this.uploadFn,
+        closeOnUpload = this.defaults.closeOnUpload,
+        error = this.emit.bind( this, 'error' );
+
+    this._createEvent( target, function( err, uploadEvent ) {
+        if ( err ) {
+            error( err );
+            return;
+        }
+
+        uploadFn( uploadEvent || _event );
+        if ( closeOnUpload ) { // this should be changable
+            close();
+            return;
+        }
+    } );
+};
+
+/*
+### Skoll::preview
+
+preview method is a easy way to open up the use or cancel dialog. This will open up the preview plugin that is registered with the system to preview the selection. 
+
+__params__
+
+- target { Object } - This is a object that will have the key Files in it. It is something similiar to the `event.target` object you would get on a change event of a file type input.
+    - target.files { Array } - This can be a `Blob` or an object with the key `url` inside of it. eg. `[{ url: https://pbs.twimg.com/profile_images/544039728463351808/NkoRdBBL_bigger.png }]`. When creating an event this will attempt to convert this url into a blob if it is an image, otherwise it will just pass the object to the upload adapter.
+*/
+
+
+Skoll.prototype.preview = function( target ) {
+    
+    if ( typeof target.files !== 'object' ) { // default upload events are not a true array
+        this.emit( 'error', new Error( 'target passed to Skoll::upload does not have files array' ) );
+        return;
+    }
+
+    var open = this.open.bind( this ),
+        meta = this.meta;
+
+    this._createEvent( target, function( err, uploadEvent ) {
+        meta.event = uploadEvent;
+        open( { 
+            meta: meta,
+            plugin: 'preview' 
+        } );
+    } );
+
+};
+
+
+/*
+__params__
+
+- target { Object } - This is a object that will have the key Files in it. It is something similiar to the `event.target` object you would get on a change event of a file type input.
+    - target.files { Array } - This can be a `Blob` or an object with the key `url` inside of it. eg. `[{ url: https://pbs.twimg.com/profile_images/544039728463351808/NkoRdBBL_bigger.png }]`. When creating an event this will attempt to convert this url into a blob if it is an image, otherwise it will just pass the object to the upload adapter.
+*/
+
+/*
+### Skoll::addPlugin
+
+This will add a plugin to the list of available plugins. Meaning that it will also add the plugin name to the list of _tabable_ plugins, and targets to open when opening the `Skoll`.
+
+__params__
+
+- plugin { Object } - A `Plugin` object that has a number of differnt attributes on the plugin to allow the `Skoll` to read and interact with the plugin. If some required methods are not provided the plugin will not be added and an `error` event will be emitted from the Skoll.
+
+- options { Object } - _Optional_ A optional object that can specify the behavior in which the `Skoll` behaves with plugin. 
   - options.menuItem { Boolean } - _Optional_ A flag to specify if the plugin should be linked to in a list of plugins.
 
 __returns__
 
-- plugin { Object } - A copy of the `Plugin` object back with the `isAdded` property set to true if successfull added to the `FileUploader`
+- plugin { Object } - A copy of the `Plugin` object back with the `isAdded` property set to true if successfull added to the `Skoll`
 
 ```javascript
-var fileUploader = require( 'file-uploader' ),
+var Skoll = require( 'file-uploader' ),
     foo = {
         open: function(){}
     },
@@ -159,20 +273,20 @@ var fileUploader = require( 'file-uploader' ),
             name: 'Bar'
         }
     },
-    pluginFoo = fileUploader.addPlugin( foo ),
-    pluginBar = fileUploader.addPlugin( bar );
+    pluginFoo = Skoll.addPlugin( foo ),
+    pluginBar = Skoll.addPlugin( bar );
 
 pluginFoo.isAdded // false - missing some required methods
 pluginBar.isAdded // true
 ```
 */
 
-FileUploader.prototype.addPlugin = function( plugin, options ) {
+Skoll.prototype.addPlugin = function( plugin, options ) {
     
     var _plugin = merge( true, {}, plugin || {} );
     options = options || {};
 
-    if ( !FileUploader.isPlugin( plugin ) ){
+    if ( !Skoll.isPlugin( plugin ) ){
         _plugin.isAdded = false;
         return _plugin;
     }  
@@ -184,7 +298,7 @@ FileUploader.prototype.addPlugin = function( plugin, options ) {
 };
 
 /*
-### FileUploader::useToUpload
+### Skoll::useToUpload
 
 This is a way to extend the file uploader to allow for custom ways to upload files to your server. 
 
@@ -195,9 +309,9 @@ __params__
 uploadFn is passed an UploadEvent object that has a number of hooks that you can tie your uploader into to allow for an interactive experience while uploading photos. See `UploadEvent` object specification to see how to hook into this functionality
 
 ```javascript
-var fileUploader = require( 'file-uploader' );
+var Skoll = require( 'file-uploader' );
 
-fileUploader.useToUpload( function( <UploadEvent> ) {
+Skoll.useToUpload( function( <UploadEvent> ) {
     var files = event.files; // this is commiting from a input file event
     // blah blah upload
     feedbackFns.done({
@@ -207,17 +321,43 @@ fileUploader.useToUpload( function( <UploadEvent> ) {
 ```
 */
 
-FileUploader.prototype.useToUpload = function( fn ) {
-    
+Skoll.prototype.useToUpload = function( fn ) {
     if ( typeof fn === 'function' ) {
         this.uploadFn = fn;
         return;
     }
 
-    // this.emit( 'error', new Error( 'useToUpload needs to be passed a function as the first parameter, ' + typof fn + ' given.' ) );
+    this.emit( 'error', new Error( 'useToUpload needs to be passed a function as the first parameter, ' + typeof fn + ' given.' ) );
 };
 
-FileUploader.isPlugin = function( plugin ) {
+
+// start private methods
+
+Skoll.prototype._createEvent = function( target, callback ) { 
+
+    var _event = {},
+        error = this.emit.bind( this, 'error' );
+
+    _event.files = target.files;
+    _event.originalEvent = target;
+
+    // ways to give feedback to Skoll
+    _event.done = this.emit.bind( this, 'done' );
+    _event.error = error;
+
+    new UploadEvent( _event, callback );
+
+};
+
+Skoll.prototype.mapBindOpen = function( el ) {
+    el.addEventListener( 'click', this.open.bind( this, {
+        meta: this.meta, 
+        plugin: el.getAttribute( 'data-plugin-name' ) 
+    } ) );
+    return el;
+};
+
+Skoll.isPlugin = function( plugin ) {
 
     if ( !plugin || typeof plugin !== 'object' ) {
         return false;
@@ -238,57 +378,95 @@ FileUploader.isPlugin = function( plugin ) {
     return true;
 };
 
-FileUploader.pluginVisible = function( plugin ) {
+Skoll.pluginVisible = function( plugin ) {
     return !plugin.attributes.hide;
 };
 
-FileUploader.pluginListEl = function( plugin ) {
-    var el = document.createElement( 'li' ),
-        span = document.createElement( 'span' );
-
-    // consider some way to use icons
-    span.innerText = plugin.name;
-    // need a way to bind events
-    el.appendChild( span );
-
-    return el;
+Skoll.mapPlugins = function( plugins ) {
+    return function( pluginName ) {
+        return plugins[ pluginName ];
+    }
 };
 
-FileUploader._init = function( ) {
+Skoll.pluginListEl = function( currentPlugin ) {
+
+    var currentPluginName = currentPlugin.attributes.name; 
+
+    return function( plugin ) {
+        var el = document.createElement( 'li' ),
+            span = document.createElement( 'span' ),
+            name = plugin.attributes.name;
+
+        // consider some way to use icons
+        span.innerText = name;
+        el.setAttribute( 'data-plugin-name', name );
+        el.appendChild( span );
+        if ( name === currentPluginName ) {
+            el.setAttribute( 'data-plugin-selected', true );
+        }
+
+        return el;        
+    }
+
+};
+
+Skoll.prototype._init = function( ) {
 
     // this.el is built in the constructor
+    var div = document.createElement.bind( document, 'div' ); 
 
-    this.tableEl = document.createElement( 'div' );
-    this.modalEl = document.createElement( 'div' );
-    this.contentEl = document.createElement( 'div' );
+    this.tableEl = div();
+    this.cellEl = div();
+    this.modalEl = div();
+    this.contentEl = div();
+    this.closeEl = div();
     this.listEl = document.createElement( 'ul' );
     // classing structure
-    this.el.classList.add( 'FileUploader-modal-overlay' );
-    this.tableEl.classList.add( 'FileUploader-modal-table' ); // this is here to allow vertical centering
-    this.modalEl.classList.add( 'FileUploader-modal' );
-    this.contentEl.classList.add( 'FileUploader-modal-content' );
-    this.listEl.classList.add( 'FileUploader-modal-list' );
+    this.el.classList.add( 'skoll-modal-overlay' );
+    this.tableEl.classList.add( 'skoll-modal-table' ); // this is here to allow vertical centering
+    this.cellEl.classList.add( 'skoll-modal-cell' );
+    this.closeEl.classList.add( 'skoll-modal-close' );
+    this.modalEl.classList.add( 'skoll-modal' );
+    this.contentEl.classList.add( 'skoll-modal-content' );
+    this.listEl.classList.add( 'skoll-modal-list' );
     // adding them all together
     this.el.appendChild( this.tableEl );
-    this.tableEl.appendChild( this.modalEl );
+    this.tableEl.appendChild( this.cellEl );
+    this.cellEl.appendChild( this.modalEl );
     this.modalEl.appendChild( this.listEl );
+    this.modalEl.appendChild( this.closeEl );
     this.modalEl.appendChild( this.contentEl );
 
     /* HTML repesentation
     
-    <div class="FileUploader-modal-overlay" >
-        <div class="FileUploader-modal-table" >
-            <div class="FileUploader-modal" >
-                <ul class="FileUploader-modal-list"></ul>
-                <div class="FileUploader-modal-content"></div>
+    <div class="skoll-modal-overlay" >
+        <div class="skoll-modal-table" >
+            <div class="skoll-modal-cell" >
+                <div class="skoll-modal" >
+                    <ul class="skoll-modal-list"></ul>
+                    <div class="skoll-modal-close"></div>
+                    <div class="skoll-modal-content"></div>
+                </div>
             </div>
         </div>
     </div>
 
     */
+    function stopPropagation( e ) {
+        e.stopPropagation();
+    }
+    // bind some events to dom
+    this.closeEl.addEventListener( 'click', this.close.bind( this ) );
+    this.el.addEventListener( 'click', this.close.bind( this ) );
+    this.modalEl.addEventListener( 'click', stopPropagation );
+
+    // attach default plugin
+    this.addPlugin( uploadPlugin );
+    this.addPlugin( previewPlugin );
+
 };
 
-FileUploader.prototype._handlePluginOpen = function( options, err, el ) {
+Skoll.prototype._handlePluginOpen = function( options, err, el ) {
 
     var defaultPlugin = this.defaults.plugin,
         openDefault = this.open.bind( this, merge( options, { 
@@ -296,7 +474,7 @@ FileUploader.prototype._handlePluginOpen = function( options, err, el ) {
         } ) );
 
     if ( err ) {
-        // this.emit( 'error', err );
+        this.emit( 'error', err );
         if ( options.plugin !== defaultPlugin ) {
             openDefault();
         }
@@ -317,6 +495,7 @@ FileUploader.prototype._handlePluginOpen = function( options, err, el ) {
     openDefault(); // just try to open default when no content is given
 };
 
-module.exports = new FileUploader();
-module.exports.FileUploader = FileUploader;
+module.exports = new Skoll();
+module.exports.Skoll = Skoll;
 module.exports.UploadEvent = UploadEvent;
+module.exports.imageToBlob = require( 'image-to-blob' );

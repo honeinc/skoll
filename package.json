@@ -1,15 +1,16 @@
 {
-  "name": "file-uploader",
-  "version": "0.0.0",
-  "description": "a simple browserifiable upload modal",
+  "name": "skoll",
+  "version": "0.0.1",
+  "description": "a simple browserifiable upload modal (still early dev)",
   "main": "index.js",
   "scripts": {
     "test": "jshint ./index.js ./src/* && browserify test/*.js | tape-run -b firefox",
-    "build": "gulp"
+    "build": "gulp",
+    "example": "browserify examples/index.js -o examples/bundle.js"
   },
   "repository": {
     "type": "git",
-    "url": "http://github.com/honeinc/file-uploader"
+    "url": "http://github.com/honeinc/skoll"
   },
   "keywords": [
     "upload",
@@ -21,9 +22,9 @@
   "author": "Jacob Lowe",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/honeinc/file-uploader/issues"
+    "url": "https://github.com/honeinc/skoll/issues"
   },
-  "homepage": "https://github.com/honeinc/file-uploader",
+  "homepage": "https://github.com/honeinc/skoll",
   "devDependencies": {
     "browserify": "^6.3.2",
     "faucet": "0.0.1",
@@ -37,6 +38,9 @@
     "tape-run": "^0.3.0"
   },
   "dependencies": {
+    "event-emitter": "^0.3.1",
+    "image-to-blob": "^0.1.0",
+    "image-to-data-uri": "0.0.1",
     "merge": "^1.2.0"
   }
 }

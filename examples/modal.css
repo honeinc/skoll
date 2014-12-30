@@ -1,0 +1,134 @@
+.skoll-modal-overlay {
+    display: none;
+    position: fixed;
+    background: rgba( 0,0,0,.3 );
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    font-family: sans-serif;
+}
+
+.skoll-modal-overlay.show {
+    display: block;
+}
+
+.skoll-modal-table {
+    display: table;
+    margin: 0 auto;
+    height: 100%;
+    padding: 0 10px;
+    max-width: 800px;
+    width: 75%;
+    min-height: 300px;
+}
+
+.skoll-modal-cell {
+    display: table-cell;
+    vertical-align: middle;
+}
+
+.skoll-modal {
+    background: white;
+    padding: 2em 0 0;
+    position: relative;
+}
+
+.skoll-modal-list {
+    margin: 0;
+    list-style-type: none;
+    padding: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding-left: .5em;
+}
+
+.skoll-modal-close {
+    background: dimgrey;
+    padding: 0 .4em;
+    font-size: 1.8em;
+    color: white;
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+.skoll-modal-close::before {
+    content: '\00D7';
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.skoll-modal-list li {
+    padding: .5em 1em;
+    display: inline-block;
+    color: dimgrey;
+    cursor: pointer;
+    border-bottom: 2px solid white;
+    text-transform: uppercase;
+    font-weight: 700;
+}
+
+
+.skoll-modal-list li:hover {
+    background: whitesmoke;
+}
+
+.skoll-modal-list [data-plugin-selected] {
+    border-bottom: 2px solid dimgrey;
+}
+
+.skoll-modal-content {
+    height: 300px;
+    padding: 2em;
+    overflow-y: scroll;
+}
+
+.skoll-preview-images {
+    display: table;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.skoll-preview-images::after {
+    content: "";
+    display: block;
+    clear: both;
+}
+
+.skoll-preview-image {
+    width: 150px;
+    height: 150px;
+    background-size: cover;
+    background-position: center center;
+    margin: 0 2px;
+    display: inline-block;
+}
+
+.skoll-preview-buttons {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    line-height: 3em;
+    background: white;
+    padding: 0 0 0 1em;
+}
+
+.skoll-preview-buttons button {
+    border: 1px solid dimgrey;
+    background: transparent;
+    color: dimgrey;
+    padding: 0.5em 1em;
+    margin: 0 1em 0 0;
+}
+
+.skoll-preview-buttons button:hover {
+    background: whitesmoke;
+}
+
+.skoll-preview-buttons button:active {
+    background: dimgrey;
+    color: white;
+    outline: none;
+}
