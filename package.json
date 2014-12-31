@@ -1,7 +1,7 @@
 {
   "name": "skoll",
-  "version": "0.0.1",
-  "description": "a simple browserifiable upload modal (still early dev)",
+  "version": "0.1.0",
+  "description": "a simple browserifiable upload modal",
   "main": "index.js",
   "scripts": {
     "test": "jshint ./index.js ./src/* && browserify test/*.js | tape-run -b firefox",
