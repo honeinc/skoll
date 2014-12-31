@@ -1,5 +1,8 @@
 var skoll = require( '..' ),
+    emit = require( 'emit-bindings' ),
     foo = require( './foo' );
+
+emit.on( 'open.skoll', skoll.open.bind( skoll ) );
 
 skoll.on( 'error', function( err ) {
     console.error( err.message );

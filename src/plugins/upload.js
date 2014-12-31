@@ -1,53 +1,108 @@
 
-var plugin = module.exports = {
-    open: function( meta, fileUploader, done ) {
-        var button = document.createElement( 'button' );
-        
-        plugin.container = document.createElement( 'form' ),
+var emit = require( 'emit-bindings' );
 
-        plugin.upload = document.createElement( 'input' );
-        plugin.upload.type = 'file';
-        plugin.upload.multiple = true;
+function Upload( attrs ){ 
+    this.attributes = attrs;
+}
 
-        plugin.input = document.createElement( 'input' );
-        plugin.input.type = 'url';
-
-        button.innerHTML = 'Submit';
-
-        plugin.container.appendChild( plugin.upload );
-        plugin.container.appendChild( plugin.input );
-        plugin.container.appendChild( button );
-
-        plugin.container.addEventListener( 'submit', onEventSubmit.bind( null, fileUploader ) );
-        plugin.upload.addEventListener( 'change', onEventChange.bind( null, fileUploader ) );
-        done( null, plugin.container );
+Upload.prototype = {
+    open: function( meta, skoll, done ) {
+        this.skoll = skoll;
+        emit.on( 'skoll.upload.submit', this.onSubmit.bind( this ) );
+        emit.on( 'skoll.upload.trigger', this.onTrigger.bind( this ) );
+        this.render( done );
     },
     teardown: function() {
-        plugin.upload = null;
-        plugin.input = null;
-        plugin.container = null;
+        // clear out some cache
+        this.upload = null;
+        this.input = null;
+        this.container = null;
+        this.skoll = null;
+        emit.removeAllListeners( 'skoll.upload.submit' );
+        emit.removeAllListeners( 'skoll.upload.trigger' );
     },
-    attributes: {
-        name : 'upload'
+    onSubmit: function( e ) {
+
+        e.preventDefault();
+
+        var input = this.input,
+            value = input.value,
+            event = {
+                files: [{
+                    url: value
+                }]
+            };
+
+        this.skoll.preview( event );
+    },
+    onChange: function( e ) {
+        this.skoll.preview( e.target );
+    },
+    onTrigger: function( e ) {
+        this.upload.dispatchEvent( new MouseEvent( 'click' ) ); // proxy event to upload
+    },
+    attachListeners: function( ) {
+
+        var leaveBuffer,
+            classList = this.dropzone.classList;
+
+        function dragOver() {
+            clearTimeout( leaveBuffer );
+            if ( classList.contains( 'skoll-upload-drag-over' ) ) return;
+            classList.add( 'skoll-upload-drag-over' );
+        }
+
+        function dragLeave() {
+            classList.remove( 'skoll-upload-drag-over' );
+            classList.remove( 'skoll-upload-show' );
+        }
+
+        function showOver() {
+            if ( classList.remove( 'skoll-upload-show' ) ) return;
+            classList.add( 'skoll-upload-show' );
+        }
+
+        this.dropzone.addEventListener( 'dragover', dragOver );
+        this.dropzone.addEventListener( 'dragleave', dragLeave );
+        this.dropzone.addEventListener( 'drop', dragLeave );
+
+        this.skoll.el.removeEventListener( 'dragover', showOver );
+        this.skoll.el.addEventListener( 'dragover', showOver );
+
+        this.upload.addEventListener( 'change', this.onChange.bind( this ) );
+
+    },
+    render: function( done ) {
+
+        var html = 
+        '<div class="skoll-upload-url">' + 
+            '<button class="skoll-button" data-emit="skoll.upload.trigger">Upload A File</button>' +
+        '</div>' +
+        '<hr>' +
+        '<form class="skoll-upload-form" data-emit="skoll.upload.submit">' + 
+            '<p>Use an URL:</p>' + 
+            '<input type="url" />' + 
+            '<button class="skoll-button">Submit</button>' +
+        '</form>' +
+        '<div class="skoll-upload-dropzone">' +
+            '<p>Drop you images here!</p>' +
+            '<input class="skoll-upload-input" type="file" multiple />' +
+        '</div>';
+
+        this.el = document.createElement( 'div' );
+        this.el.classList.add( 'skoll-upload-plugin' );
+        this.el.innerHTML = html;
+
+        this.dropzone = this.el.getElementsByClassName( 'skoll-upload-dropzone' )[ 0 ];
+        this.upload = this.dropzone.getElementsByClassName( 'skoll-upload-input' )[ 0 ];
+        this.input = this.el.querySelector( '.skoll-upload-form input' );
+
+        this.attachListeners( );
+
+        done( null, this.el );
     }
-}
+};
 
-
-function onEventChange( fileUploader, event ) {
-    fileUploader.preview( event.target );
-}
-
-function onEventSubmit( fileUploader, e ) {
-
-    e.preventDefault();
-
-    var input = plugin.input,
-        value = input.value,
-        event = {
-            files: [{
-                url: value
-            }]
-        };
-
-    fileUploader.preview( event );
-}
+module.exports = new Upload( {
+    name: 'upload'
+} );

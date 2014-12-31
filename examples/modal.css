@@ -30,7 +30,7 @@
 
 .skoll-modal {
     background: white;
-    padding: 2em 0 0;
+    padding: 3.2em 0 0;
     position: relative;
 }
 
@@ -41,17 +41,23 @@
     position: absolute;
     top: 0;
     left: 0;
+    right: 0;
     padding-left: .5em;
+    background: white;
+    line-height: 2em;
+    box-shadow: 0 1px 2px rgba( 0,0,0,.1 );
 }
 
 .skoll-modal-close {
     background: dimgrey;
-    padding: 0 .4em;
+    padding: 0 .6em;
     font-size: 1.8em;
     color: white;
     position: absolute;
     top: 0;
     right: 0;
+    line-height: 1.7em;
+    cursor: pointer;
 }
 
 .skoll-modal-close::before {
@@ -83,12 +89,14 @@
     height: 300px;
     padding: 2em;
     overflow-y: scroll;
+    background: whitesmoke;
 }
 
 .skoll-preview-images {
-    display: table;
+    /* display: table; */
     margin: 0 auto;
     text-align: center;
+    padding-bottom: 1em;
 }
 
 .skoll-preview-images::after {
@@ -106,29 +114,107 @@
     display: inline-block;
 }
 
+.skoll-preview-image-large {
+    max-width: 100%;
+}
+
 .skoll-preview-buttons {
     position: absolute;
     bottom: 0;
     right: 0;
+    left: 0;
+    text-align: center;
     line-height: 3em;
     background: white;
-    padding: 0 0 0 1em;
+    padding: 0 1em;
+    box-shadow: 0 -1px 2px rgba( 0,0,0,.1 );
 }
 
-.skoll-preview-buttons button {
+.skoll-button {
     border: 1px solid dimgrey;
     background: transparent;
     color: dimgrey;
     padding: 0.5em 1em;
-    margin: 0 1em 0 0;
+    box-shadow: 0 1px 2px rgba( 0,0,0,.1 );
+    background: white;
+    cursor: pointer;
 }
 
-.skoll-preview-buttons button:hover {
+.skoll-button + .skoll-button {
+    margin: 0 0 0 1em;    
+}
+
+.skoll-button:hover {
     background: whitesmoke;
 }
 
-.skoll-preview-buttons button:active {
+.skoll-button:active {
     background: dimgrey;
     color: white;
-    outline: none;
+    outline: none;    
+}
+
+.skoll-upload-plugin {
+    text-align: center;
+}
+
+.skoll-upload-plugin hr {
+    text-align: center;
+    height: 0.5em;
+    border: 0;
+    border-bottom: 2px solid dimgray;
+    margin: 4em;
+}
+
+.skoll-upload-plugin hr::before {
+    content: 'OR';
+    background: whitesmoke;
+    padding: .5em;
+    margin-top: -5em;
+    color: dimgray;
+    display: inline-block;
+}
+
+.skoll-upload-dropzone,
+.skoll-upload-dropzone input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+}
+
+.skoll-upload-dropzone {
+    display: none;
+    background: white;
+    border: 2px solid whitesmoke;
+    text-align: center;
+    color: dimgrey;
+}
+
+.skoll-upload-dropzone input {
+    opacity: 0;
+}
+
+.skoll-upload-dropzone p {
+    font-size: 2em;
+    height: auto;
+    top: 50%;
+    -webkit-transform: translateY(-50%);
+    transform: translateY(-50%);
+    position: absolute;
+    width: 100%;
+    margin: 0;
+}
+
+.skoll-upload-dropzone.skoll-upload-show {
+    display: block;
+}
+
+.skoll-upload-plugin input[type="url"] {
+    border: 1px solid dimgray;
+    padding: 0.5em 1em;
+    margin-right: -1px;
+    box-shadow: 0 1px 2px rgba( 0,0,0,.1 );
 }

@@ -2,7 +2,8 @@
 'use strict';
 
 var merge = require( 'merge' ),
-    eventEmitter = require( 'event-emitter' ),
+    EventEmitter2 = require( 'eventemitter2' ).EventEmitter2,
+    emit = require( 'emit-bindings' ),
     UploadEvent = require( './src/upload-event'),
     utils = require( './src/utils' ),
     uploadPlugin = require( './src/plugins/upload' ),
@@ -21,8 +22,6 @@ var Skoll = require( 'file-uploader' ).Skoll,
 
 function Skoll() {
 
-    eventEmitter( this );
-
     this.el = document.createElement( 'div' );
     this.state = {
         view: 0
@@ -33,19 +32,24 @@ function Skoll() {
         closeOnUpload: true
     };
 
+    EventEmitter2.call( this );
     setTimeout( this._init.bind( this ), 0 );
 }
 
-Skoll.prototype = {
-    get pluginList ( ) {
-        var plugins = Object.keys( this.plugins );
-        return plugins.map( Skoll.mapPlugins( this.plugins ) )
-            .filter( Skoll.pluginVisible )
-            .map( Skoll.pluginListEl( this.currentPlugin ) )
-            .reverse();
+Skoll.prototype = Object.create( EventEmitter2.prototype, {
+        pluginList: { // descriptor
+            get: function ( ) {        
+                var plugins = Object.keys( this.plugins );
+                return plugins.map( Skoll.mapPlugins( this.plugins ) )
+                    .filter( Skoll.pluginVisible )
+                    .map( Skoll.pluginListEl( this.currentPlugin ) )
+                    .reverse();
+            }
+        }
     }
-};
+);
 
+Skoll.prototype.constructor = Skoll;
 /*
 ### Skoll::open
 
@@ -94,20 +98,15 @@ Skoll.prototype.open = function( options ) {
         plugin = this.plugins[ pluginName ] || this.plugins[ defaultPlugin ],
         close = this.close.bind( this );
 
-
-    if ( this.currentPlugin ) {
-        this.currentPlugin.teardown();
-    }
-
     options.plugin = pluginName;
+    this.prevPlugin = this.currentPlugin;
     this.currentPlugin = plugin;
     this.meta = options.meta || {};
 
     // update links
     this.listEl.innerHTML = '';
 
-    this.pluginList.map( this.mapBindOpen.bind( this ) )
-        .forEach( this.listEl.appendChild.bind( this.listEl ) );
+    this.pluginList.forEach( this.listEl.appendChild.bind( this.listEl ) );
 
     this.el.classList.add( 'show' );
     this.state.view = 1;
@@ -349,14 +348,6 @@ Skoll.prototype._createEvent = function( target, callback ) {
 
 };
 
-Skoll.prototype.mapBindOpen = function( el ) {
-    el.addEventListener( 'click', this.open.bind( this, {
-        meta: this.meta, 
-        plugin: el.getAttribute( 'data-plugin-name' ) 
-    } ) );
-    return el;
-};
-
 Skoll.isPlugin = function( plugin ) {
 
     if ( !plugin || typeof plugin !== 'object' ) {
@@ -400,6 +391,7 @@ Skoll.pluginListEl = function( currentPlugin ) {
         // consider some way to use icons
         span.innerText = name;
         el.setAttribute( 'data-plugin-name', name );
+        el.setAttribute( 'data-emit', 'skoll.plugin.open' );
         el.appendChild( span );
         if ( name === currentPluginName ) {
             el.setAttribute( 'data-plugin-selected', true );
@@ -423,10 +415,13 @@ Skoll.prototype._init = function( ) {
     this.listEl = document.createElement( 'ul' );
     // classing structure
     this.el.classList.add( 'skoll-modal-overlay' );
+    this.el.setAttribute( 'data-emit', 'skoll.close' );
     this.tableEl.classList.add( 'skoll-modal-table' ); // this is here to allow vertical centering
     this.cellEl.classList.add( 'skoll-modal-cell' );
     this.closeEl.classList.add( 'skoll-modal-close' );
+    this.closeEl.setAttribute( 'data-emit', 'skoll.close' );
     this.modalEl.classList.add( 'skoll-modal' );
+    this.modalEl.setAttribute( 'data-emit', 'skoll.modal.stopPropagation' );
     this.contentEl.classList.add( 'skoll-modal-content' );
     this.listEl.classList.add( 'skoll-modal-list' );
     // adding them all together
@@ -450,20 +445,24 @@ Skoll.prototype._init = function( ) {
             </div>
         </div>
     </div>
-
     */
-    function stopPropagation( e ) {
-        e.stopPropagation();
-    }
+
     // bind some events to dom
-    this.closeEl.addEventListener( 'click', this.close.bind( this ) );
-    this.el.addEventListener( 'click', this.close.bind( this ) );
-    this.modalEl.addEventListener( 'click', stopPropagation );
+    emit.on( 'skoll.close', this.close.bind( this ) );
+    emit.on( 'skoll.plugin.open', this._onPluginOpen.bind( this ) );
 
     // attach default plugin
     this.addPlugin( uploadPlugin );
     this.addPlugin( previewPlugin );
 
+};
+
+Skoll.prototype._onPluginOpen = function( e ) {
+    var el = e.emitTarget;
+    this.open( {
+        meta: this.meta, 
+        plugin: el.getAttribute( 'data-plugin-name' ) 
+    } );
 };
 
 Skoll.prototype._handlePluginOpen = function( options, err, el ) {
@@ -472,6 +471,10 @@ Skoll.prototype._handlePluginOpen = function( options, err, el ) {
         openDefault = this.open.bind( this, merge( options, { 
             plugin: defaultPlugin
         } ) );
+
+    if ( this.prevPlugin ) {
+        this.prevPlugin.teardown();
+    }
 
     if ( err ) {
         this.emit( 'error', err );
