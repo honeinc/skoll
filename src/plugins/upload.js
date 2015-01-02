@@ -10,7 +10,7 @@ Upload.prototype = {
         this.skoll = skoll;
         emit.on( 'skoll.upload.submit', this.onSubmit.bind( this ) );
         emit.on( 'skoll.upload.trigger', this.onTrigger.bind( this ) );
-        this.render( done );
+        this.render( meta, done );
     },
     teardown: function() {
         // clear out some cache
@@ -72,7 +72,7 @@ Upload.prototype = {
         this.upload.addEventListener( 'change', this.onChange.bind( this ) );
 
     },
-    render: function( done ) {
+    render: function( meta, done ) {
 
         var html = 
         '<div class="skoll-upload-url">' + 
@@ -86,7 +86,7 @@ Upload.prototype = {
         '</form>' +
         '<div class="skoll-upload-dropzone">' +
             '<p>Drop you images here!</p>' +
-            '<input class="skoll-upload-input" type="file" multiple />' +
+            '<input class="skoll-upload-input" type="file" />' +
         '</div>';
 
         this.el = document.createElement( 'div' );
@@ -96,6 +96,14 @@ Upload.prototype = {
         this.dropzone = this.el.getElementsByClassName( 'skoll-upload-dropzone' )[ 0 ];
         this.upload = this.dropzone.getElementsByClassName( 'skoll-upload-input' )[ 0 ];
         this.input = this.el.querySelector( '.skoll-upload-form input' );
+
+        if ( meta.multiple ) {
+            this.upload.setAttribute( 'multiple', true );
+        }
+
+        if ( meta.url ) {
+            this.input.value = meta.url;
+        }
 
         this.attachListeners( );
 

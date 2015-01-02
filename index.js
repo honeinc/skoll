@@ -422,6 +422,7 @@ Skoll.prototype._init = function( ) {
     this.closeEl.setAttribute( 'data-emit', 'skoll.close' );
     this.modalEl.classList.add( 'skoll-modal' );
     this.modalEl.setAttribute( 'data-emit', 'skoll.modal.stopPropagation' );
+    this.modalEl.setAttribute( 'data-emit-options', 'allowdefault' );
     this.contentEl.classList.add( 'skoll-modal-content' );
     this.listEl.classList.add( 'skoll-modal-list' );
     // adding them all together
