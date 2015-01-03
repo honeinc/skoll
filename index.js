@@ -6,8 +6,8 @@ var merge = require( 'merge' ),
     emit = require( 'emit-bindings' ),
     UploadEvent = require( './src/upload-event'),
     utils = require( './src/utils' ),
-    uploadPlugin = require( './src/plugins/upload' ),
-    previewPlugin = require( './src/plugins/preview' );
+    uploadPlugin = require( 'skoll-upload' ),
+    previewPlugin = require( 'skoll-preview' );
 
 /*
 ### Skoll - Constructor

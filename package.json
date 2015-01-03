@@ -1,6 +1,6 @@
 {
   "name": "skoll",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "a simple browserifiable upload modal",
   "main": "index.js",
   "scripts": {
@@ -40,11 +40,12 @@
   },
   "dependencies": {
     "bound": "0.0.3",
-    "emit": "git://github.com/honeinc/emit",
     "emit-bindings": "^1.0.2",
     "eventemitter2": "^0.4.14",
-    "image-to-blob": "^0.1.0",
+    "image-to-blob": "^0.2.0",
     "image-to-data-uri": "0.0.1",
-    "merge": "^1.2.0"
+    "merge": "^1.2.0",
+    "skoll-preview": "^0.0.1",
+    "skoll-upload": "^0.0.1"
   }
 }
