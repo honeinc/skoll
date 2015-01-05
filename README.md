@@ -9,3 +9,25 @@ Skoll is an upload modal that is hella cool. It is super pluggable by nature. Yo
 
 [What does Sköll mean?](http://en.wikipedia.org/wiki/Sk%C3%B6ll)
 
+## Usage
+
+Use with [Browserify](http://browserify.org).
+
+```
+var skoll = require( 'skoll' );
+
+skoll.addPlugin( foo );
+skoll.useToUpload( function( event ) {
+    
+} );
+
+skoll.open();
+```
+
+## Creating a plugin
+
+coming soon.
+
+## Creating an upload fn
+
+coming soon.
