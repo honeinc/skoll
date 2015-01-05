@@ -389,7 +389,7 @@ Skoll.pluginListEl = function( currentPlugin ) {
             name = plugin.attributes.name;
 
         // consider some way to use icons
-        span.innerText = name;
+        span.textContent = name;
         el.setAttribute( 'data-plugin-name', name );
         el.setAttribute( 'data-emit', 'skoll.plugin.open' );
         el.appendChild( span );
