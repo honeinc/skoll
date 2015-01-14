@@ -1,6 +1,6 @@
 {
   "name": "skoll",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "a simple browserifiable upload modal",
   "main": "index.js",
   "scripts": {
@@ -45,7 +45,7 @@
     "image-to-blob": "^0.2.0",
     "image-to-data-uri": "0.0.1",
     "merge": "^1.2.0",
-    "skoll-preview": "^0.0.1",
+    "skoll-preview": "^0.0.3",
     "skoll-upload": "^0.0.1"
   }
 }
