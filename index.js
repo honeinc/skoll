@@ -23,6 +23,8 @@ var Skoll = require( 'file-uploader' ).Skoll,
 function Skoll() {
 
     this.el = document.createElement( 'div' );
+    this.listEl = document.createElement( 'ul' );
+    this.contentEl = document.createElement( 'div' );
     this.state = {
         view: 0
     };
@@ -33,6 +35,9 @@ function Skoll() {
     };
 
     EventEmitter2.call( this );
+    // attach default plugin
+    this.addPlugin( uploadPlugin );
+    this.addPlugin( previewPlugin );
     setTimeout( this._init.bind( this ), 0 );
 }
 
@@ -404,15 +409,13 @@ Skoll.pluginListEl = function( currentPlugin ) {
 
 Skoll.prototype._init = function( ) {
 
-    // this.el is built in the constructor
+    // this.el && this.listEl is built in the constructor
     var div = document.createElement.bind( document, 'div' ); 
 
     this.tableEl = div();
     this.cellEl = div();
     this.modalEl = div();
-    this.contentEl = div();
     this.closeEl = div();
-    this.listEl = document.createElement( 'ul' );
     // classing structure
     this.el.classList.add( 'skoll-modal-overlay' );
     this.el.setAttribute( 'data-emit', 'skoll.close' );
@@ -452,9 +455,6 @@ Skoll.prototype._init = function( ) {
     emit.on( 'skoll.close', this.close.bind( this ) );
     emit.on( 'skoll.plugin.open', this._onPluginOpen.bind( this ) );
 
-    // attach default plugin
-    this.addPlugin( uploadPlugin );
-    this.addPlugin( previewPlugin );
 
 };
 
