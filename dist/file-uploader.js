@@ -39,7 +39,7 @@ function Skoll() {
 
 Skoll.prototype = Object.create( EventEmitter2.prototype, {
         pluginList: { // descriptor
-            get: function ( ) {        
+            get: function ( ) {
                 var plugins = Object.keys( this.plugins );
                 return plugins.map( Skoll.mapPlugins( this.plugins ) )
                     .filter( Skoll.pluginVisible )
@@ -84,8 +84,8 @@ Skoll.open( {
     meta: {
         description: 'Awesome cats and pizza\'s in space'
     },
-    plugin: 'giphy-search'  
-} ); 
+    plugin: 'giphy-search'
+} );
 
 ```
 */
@@ -123,7 +123,7 @@ Skoll.prototype.open = function( options ) {
     //     close();
     // } );
 
-    this.emit( 'open', plugin ); 
+    this.emit( 'open', plugin );
 
 };
 
@@ -173,7 +173,7 @@ __params__
 */
 
 
-Skoll.prototype.upload = function( target ) { 
+Skoll.prototype.upload = function( target ) {
 
     if ( typeof target.files !== 'object' ) { // default upload events are not a true array
         this.emit( 'error', new Error( 'target passed to Skoll::upload does not have files array' ) );
@@ -208,7 +208,7 @@ Skoll.prototype.upload = function( target ) {
 /*
 ### Skoll::preview
 
-preview method is a easy way to open up the use or cancel dialog. This will open up the preview plugin that is registered with the system to preview the selection. 
+preview method is a easy way to open up the use or cancel dialog. This will open up the preview plugin that is registered with the system to preview the selection.
 
 __params__
 
@@ -218,7 +218,7 @@ __params__
 
 
 Skoll.prototype.preview = function( target ) {
-    
+
     if ( typeof target.files !== 'object' ) { // default upload events are not a true array
         this.emit( 'error', new Error( 'target passed to Skoll::upload does not have files array' ) );
         return;
@@ -229,9 +229,9 @@ Skoll.prototype.preview = function( target ) {
 
     this._createEvent( target, function( err, uploadEvent ) {
         meta.event = uploadEvent;
-        open( { 
+        open( {
             meta: meta,
-            plugin: 'preview' 
+            plugin: 'preview'
         } );
     } );
 
@@ -254,7 +254,7 @@ __params__
 
 - plugin { Object } - A `Plugin` object that has a number of differnt attributes on the plugin to allow the `Skoll` to read and interact with the plugin. If some required methods are not provided the plugin will not be added and an `error` event will be emitted from the Skoll.
 
-- options { Object } - _Optional_ A optional object that can specify the behavior in which the `Skoll` behaves with plugin. 
+- options { Object } - _Optional_ A optional object that can specify the behavior in which the `Skoll` behaves with plugin.
   - options.menuItem { Boolean } - _Optional_ A flag to specify if the plugin should be linked to in a list of plugins.
 
 __returns__
@@ -282,14 +282,14 @@ pluginBar.isAdded // true
 */
 
 Skoll.prototype.addPlugin = function( plugin, options ) {
-    
+
     var _plugin = merge( true, {}, plugin || {} );
     options = options || {};
 
     if ( !Skoll.isPlugin( plugin ) ){
         _plugin.isAdded = false;
         return _plugin;
-    }  
+    }
 
     this.plugins[ _plugin.attributes.name ] = _plugin;
     _plugin.isAdded = true;
@@ -300,7 +300,7 @@ Skoll.prototype.addPlugin = function( plugin, options ) {
 /*
 ### Skoll::useToUpload
 
-This is a way to extend the file uploader to allow for custom ways to upload files to your server. 
+This is a way to extend the file uploader to allow for custom ways to upload files to your server.
 
 __params__
 
@@ -333,7 +333,7 @@ Skoll.prototype.useToUpload = function( fn ) {
 
 // start private methods
 
-Skoll.prototype._createEvent = function( target, callback ) { 
+Skoll.prototype._createEvent = function( target, callback ) {
 
     var _event = {},
         error = this.emit.bind( this, 'error' );
@@ -382,7 +382,7 @@ Skoll.mapPlugins = function( plugins ) {
 
 Skoll.pluginListEl = function( currentPlugin ) {
 
-    var currentPluginName = currentPlugin.attributes.name; 
+    var currentPluginName = currentPlugin.attributes.name;
 
     return function( plugin ) {
         var el = document.createElement( 'li' ),
@@ -398,7 +398,7 @@ Skoll.pluginListEl = function( currentPlugin ) {
             el.setAttribute( 'data-plugin-selected', true );
         }
 
-        return el;        
+        return el;
     }
 
 };
@@ -406,7 +406,7 @@ Skoll.pluginListEl = function( currentPlugin ) {
 Skoll.prototype._init = function( ) {
 
     // this.el is built in the constructor
-    var div = document.createElement.bind( document, 'div' ); 
+    var div = document.createElement.bind( document, 'div' );
 
     this.tableEl = div();
     this.cellEl = div();
@@ -434,7 +434,7 @@ Skoll.prototype._init = function( ) {
     this.modalEl.appendChild( this.contentEl );
 
     /* HTML repesentation
-    
+
     <div class="skoll-modal-overlay" >
         <div class="skoll-modal-table" >
             <div class="skoll-modal-cell" >
@@ -461,15 +461,15 @@ Skoll.prototype._init = function( ) {
 Skoll.prototype._onPluginOpen = function( e ) {
     var el = e.emitTarget;
     this.open( {
-        meta: this.meta, 
-        plugin: el.getAttribute( 'data-plugin-name' ) 
+        meta: this.meta,
+        plugin: el.getAttribute( 'data-plugin-name' )
     } );
 };
 
 Skoll.prototype._handlePluginOpen = function( options, err, el ) {
 
     var defaultPlugin = this.defaults.plugin,
-        openDefault = this.open.bind( this, merge( options, { 
+        openDefault = this.open.bind( this, merge( options, {
             plugin: defaultPlugin
         } ) );
 
@@ -535,8 +535,8 @@ function matches( el, selector ) {
     var nodes = document.querySelectorAll( selector, el.parentNode );
     for ( var i = 0; i < nodes.length; ++i ) {
         if ( nodes[ i ] == el ) {
-            return true;  
-        } 
+            return true;
+        }
     }
     return false;
 }
@@ -655,12 +655,12 @@ Emit.prototype.handleEvent = function( event ) {
 
             var selector = '[data-emit]';
             var originalElement = event.target || event.srcElement;
-            
+
             // if it's a link and it has no emit attribute, allow the event to pass
             if ( !originalElement.getAttribute( 'data-emit' ) && ( originalElement.tagName === 'A' || originalElement.tagName === 'BUTTON' || originalElement.tagName === 'INPUT' ) ) {
                 return;
             }
-            
+
             var forceAllowDefault = originalElement.tagName == 'INPUT' && ( originalElement.type == 'checkbox' || originalElement.type == 'radio' );
             var el = closest( originalElement, selector, true, document );
 
@@ -778,7 +778,7 @@ Emit.prototype._emit = function( element, event, forceDefault ) {
         if ( self.timeouts[ element ] ) {
             clearTimeout( self.timeouts[ element ] );
         }
-        
+
         (function() {
             var _element = element;
             var _emissions = emissions;
@@ -794,7 +794,7 @@ Emit.prototype._emit = function( element, event, forceDefault ) {
 
         return;
     }
-    
+
     emissions.forEach( function( emission ) {
         self.emit( emission, event );
     } );
@@ -1424,16 +1424,16 @@ var imageToUri = require( 'image-to-data-uri' );
 /*
 ## Image to blob
 ----------------------------------------------------------------------
-Converts remote image urls to blobs via canvas. 
+Converts remote image urls to blobs via canvas.
 
 ```javascript
 var imageToBlob = require( 'image-to-blob' );
 
-imageToBlob( 'http://foo.bar/baz.png', function( err, uri ) { 
-    console.log( uri ); 
+imageToBlob( 'http://foo.bar/baz.png', function( err, uri ) {
+    console.log( uri );
 } );
-imageToBlob( document.getElementsByTagName( 'img' )[ 0 ], function( err, uri ) { 
-    console.log( uri ); 
+imageToBlob( document.getElementsByTagName( 'img' )[ 0 ], function( err, uri ) {
+    console.log( uri );
 } );
 ```
 */
@@ -1461,7 +1461,7 @@ module.exports.getMimeTypeFromUrl = getType;
 */
 
 function imageToBlob( img, options, callback ) {
-    
+
     var src;
 
     if ( typeof options === 'function' ) {
@@ -1497,7 +1497,7 @@ function imageToBlob( img, options, callback ) {
         return;
     }
 
-    imageToUri( src, options.type, handleImageToURI.bind( null, options ) ); // attempt if we have a 
+    imageToUri( src, options.type, handleImageToURI.bind( null, options ) ); // attempt if we have a
 }
 
 /*
@@ -1534,7 +1534,7 @@ function dataURItoBlob( uri ) {
     ia = new Uint8Array( byteString.length );
 
     for ( var i = 0; i < byteString.length; i++ ) {
-        
+
         ia[ i ] = byteString.charCodeAt( i );
     }
 
@@ -1548,7 +1548,7 @@ function dataURItoBlob( uri ) {
 
     params
         options { Object } - the options object passed to the main fn with the callback attached to it
-        err { Error Object } - an error if one occurs in the imageToURI method 
+        err { Error Object } - an error if one occurs in the imageToURI method
         uri { String } - a valid data url
 
 */
@@ -1594,7 +1594,7 @@ module.exports = function (url, mimeType, cb) {
     mimeType = mimeType || 'image/png';
 
     // allow for cross origin that has correct headers
-    img.crossOrigin = "Anonymous"; 
+    img.crossOrigin = "Anonymous";
 
     img.onload = function () {
         var ctx = canvas.getContext('2d');
@@ -1634,7 +1634,7 @@ module.exports = function (url, mimeType, cb) {
 ;(function(isNode) {
 
 	/**
-	 * Merge one or more objects 
+	 * Merge one or more objects
 	 * @param bool? clone
 	 * @param mixed,... arguments
 	 * @return object
@@ -1647,7 +1647,7 @@ module.exports = function (url, mimeType, cb) {
 	}, publicName = 'merge';
 
 	/**
-	 * Merge two or more objects recursively 
+	 * Merge two or more objects recursively
 	 * @param bool? clone
 	 * @param mixed,... arguments
 	 * @return object
@@ -1805,7 +1805,7 @@ var emit = require( 'emit-bindings' ),
     };
 
 
-function Preview( attrs ){ 
+function Preview( attrs ){
     this.attributes = attrs;
 }
 
@@ -1821,13 +1821,13 @@ Preview.prototype = {
         emit.on( 'skoll.preview.use', skoll.upload.bind( skoll, meta.event ) );
 
         function next( err, URI ) {
-            
+
             var btns;
 
             count ++;
 
-            if ( !err && URI ) { 
-                _files.push( URI ); 
+            if ( !err && URI ) {
+                _files.push( URI );
             }
 
             if ( count === size ) {
@@ -1837,8 +1837,8 @@ Preview.prototype = {
 
         files.filter( filterUrls )
             .forEach( function( file ){
-                readFile( file, next ); 
-            } );    
+                readFile( file, next );
+            } );
     },
     teardown: function(){
         emit.removeAllListeners( 'skoll.preview.cancel' );
@@ -1906,7 +1906,7 @@ function readFile( file, callback ) {
 
 var emit = require( 'emit-bindings' );
 
-function Upload( attrs ){ 
+function Upload( attrs ){
     this.attributes = attrs;
 }
 
@@ -1974,14 +1974,14 @@ Upload.prototype = {
     },
     render: function( done ) {
 
-        var html = 
-        '<div class="skoll-upload-url">' + 
+        var html =
+        '<div class="skoll-upload-url">' +
             '<button class="skoll-button" data-emit="skoll-upload-trigger">Upload</button>' +
         '</div>' +
         '<hr>' +
-        '<form class="skoll-upload-form" data-emit="skoll.upload.submit">' + 
-            '<p>Use an URL:</p>' + 
-            '<input type="url" />' + 
+        '<form class="skoll-upload-form" data-emit="skoll.upload.submit">' +
+            '<p>Enter a URL:</p>' +
+            '<input type="url" />' +
             '<button class="skoll-button">Submit</button>' +
         '</form>' +
         '<div class="skoll-upload-dropzone">' +
@@ -2023,14 +2023,14 @@ var imageToBlob = require( 'image-to-blob' ),
 module.exports = createUploadEvent;
 
 function createUploadEvent ( eventdata, callback ) {
-    _getBlobData( eventdata, function( err, files ) { 
+    _getBlobData( eventdata, function( err, files ) {
         if ( err ) return callback( err );
         eventdata.files = files;
 
         callback( null, eventdata );
-    } );    
+    } );
 }
- 
+
 function _getBlobData ( eventdata, callback ) {
     var files = utils.makeArray( eventdata.files ),
         size = files.length,
