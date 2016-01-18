@@ -5,7 +5,7 @@ var merge = require( 'merge' ),
     EventEmitter2 = require( 'eventemitter2' ).EventEmitter2,
     emit = require( 'emit-bindings' ),
     UploadEvent = require( './src/upload-event'),
-    utils = require( './src/utils' ),
+    // utils = require( './src/utils' ),
     uploadPlugin = require( 'skoll-upload' ),
     previewPlugin = require( 'skoll-preview' );
 
@@ -100,8 +100,8 @@ Skoll.prototype.open = function( options ) {
 
     var defaultPlugin = this.defaults.plugin,
         pluginName =  options.plugin || defaultPlugin,
-        plugin = this.plugins[ pluginName ] || this.plugins[ defaultPlugin ],
-        close = this.close.bind( this );
+        plugin = this.plugins[ pluginName ] || this.plugins[ defaultPlugin ];
+        // close = this.close.bind( this );
 
     options.plugin = pluginName;
     this.prevPlugin = this.currentPlugin;
@@ -201,7 +201,7 @@ Skoll.prototype.upload = function( target ) {
             return;
         }
 
-        uploadFn( uploadEvent || _event );
+        uploadFn( uploadEvent );
         if ( closeOnUpload ) { // this should be changable
             close();
             return;
@@ -381,7 +381,7 @@ Skoll.pluginVisible = function( plugin ) {
 Skoll.mapPlugins = function( plugins ) {
     return function( pluginName ) {
         return plugins[ pluginName ];
-    }
+    };
 };
 
 Skoll.pluginListEl = function( currentPlugin ) {
@@ -403,7 +403,7 @@ Skoll.pluginListEl = function( currentPlugin ) {
         }
 
         return el;        
-    }
+    };
 
 };
 

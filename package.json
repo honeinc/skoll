@@ -1,6 +1,6 @@
 {
   "name": "skoll",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "a simple browserifiable upload modal",
   "main": "index.js",
   "scripts": {
@@ -43,9 +43,9 @@
     "emit-bindings": "^1.0.2",
     "eventemitter2": "^0.4.14",
     "image-to-blob": "^0.2.0",
-    "image-to-data-uri": "0.0.1",
     "merge": "^1.2.0",
     "skoll-preview": "^0.0.5",
-    "skoll-upload": "^0.0.1"
+    "skoll-upload": "^0.0.1",
+    "image-to-data-uri": "git+https://github.com/jcblw/image-to-data-uri.js#bcd2218a4fe1531080fd2fdb81e96b0c7d8909a6"
   }
 }
